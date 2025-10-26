@@ -36,14 +36,8 @@ pipeline {
             steps {
                 sh '''
                     cp /var/lib/jenkins/workspace/$JOB_NAME/target/*.war abc.war
-	            echo "Ensuring Buildx builder exists..."
-	            docker buildx create --use --name multiarch-builder || docker buildx use multiarch-builder
-
-	            echo "Building AMD64 compatible image..."
-	            docker buildx build --platform linux/amd64 -t abc_tech:$BUILD_NUMBER -f Dockerfile --load .
-
-	            docker tag abc_tech:$BUILD_NUMBER ofanini/abc_tech:$BUILD_NUMBER
-	            docker tag abc_tech:$BUILD_NUMBER ofanini/abc_tech:latest
+	            docker build -t abc_tech:$BUILD_NUMBER .
+                    docker tag abc_tech:$BUILD_NUMBER ofanini/abc_tech:$BUILD_NUMBER
                 '''
             }
         }
