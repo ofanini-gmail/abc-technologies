@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: abc-tech-deploy
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: abc_deploy
+  template:
+    metadata:
+      labels:
+        app: abc_deploy
+    spec:
+      containers:
+        - name: abc-app
+          image: docker.io/ofanini/abc_tech:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+

@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create EKS cluster with eksctl
+      command: >
+        eksctl create cluster
+        --name abc-tech-eks
+        --region us-east-1
+        --version 1.30
+        --nodes 2
+        --node-type t3.medium
+

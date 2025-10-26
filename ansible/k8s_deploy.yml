@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    kubeconfig: /var/lib/jenkins/.kube/config
+  tasks:
+    - name: Apply Deployment
+      kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ kubeconfig }}"
+        src: "{{ playbook_dir }}/../k8s/deployment.yaml"
+        wait: true
+
+    - name: Apply Service
+      kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ kubeconfig }}"
+        src: "{{ playbook_dir }}/../k8s/service.yaml"
+
+    - name: Show services
+      command: kubectl --kubeconfig {{ kubeconfig }} get svc
+      register: svc
+      changed_when: false
+
+    - debug:
+        var: svc.stdout_lines
+

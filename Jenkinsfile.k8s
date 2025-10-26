@@ -1,0 +1,67 @@
+pipeline {
+  agent any
+  environment {
+    KUBECONFIG = "/var/lib/jenkins/.kube/config"
+  }
+
+  stages {
+    stage('Checkout Code') {
+      steps {
+                checkout([
+                    $class: 'GitSCM',
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/ofanini-gmail/abc-technologies.git',
+                        credentialsId: 'gitaccess'
+                    ]],
+                    branches: [[name: '**']]
+                ])
+            }
+    }
+
+    stage('Create EKS Cluster (Ansible)') {
+      when { expression { return false } } // run manually once if needed
+      steps {
+        sh '''#!/bin/bash
+                source /opt/ansible-env/bin/activate
+                ansible-playbook ansible/create_eks.yml
+        '''
+      }
+    }
+
+    stage('Verify kubeconfig') {
+      steps {
+        sh '''
+          mkdir -p /var/lib/jenkins/.kube
+          aws eks update-kubeconfig --name abc-tech-eks --region us-east-1
+          #cp ~/.kube/config /var/lib/jenkins/.kube/config
+          kubectl get nodes
+        '''
+      }
+    }
+
+    stage('Deploy to EKS (Ansible)') {
+      steps {
+        sh '''#!/bin/bash
+		source /opt/ansible-env/bin/activate
+		ansible-playbook ansible/k8s_deploy.yml
+	'''
+      }
+    }
+
+    stage('Check Service URL') {
+      steps {
+        sh '''
+          kubectl get svc
+          echo "Access URL (LoadBalancer):"
+          kubectl get svc abc-lb-svc -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+        '''
+      }
+    }
+  }
+
+  post {
+    success { echo 'Deployed successfully to EKS.' }
+    failure { echo 'Deployment failed.' }
+  }
+}
+
