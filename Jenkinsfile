@@ -51,7 +51,9 @@ pipeline {
                       echo "Logging in to Docker Hub..."
                       echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
                       docker push ofanini/abc_tech:$BUILD_NUMBER
-                      docker logout
+			docker tag ofanini/abc_tech:$BUILD_NUMBER ofanini/abc_tech:latest
+              		docker push ofanini/abc_tech:latest
+                     docker logout
                     '''
                 }
             }
